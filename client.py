@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-host, port = 'localhost', port = os.getenv('PORT')
-host, port = os.getenv('HOST') , port = os.getenv('PORT')
+host, port = 'localhost', os.getenv('PORT')
+host, port = os.getenv('HOST'), os.getenv('PORT')
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
     client_socket.connect((host, port))
     print(f"Connected to server {host}:{port}")
