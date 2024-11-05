@@ -1,9 +1,10 @@
 import socket
 import os
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 host, port = 'localhost', os.getenv('PORT')
+host, port = 'localhost', 12345
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
     server_socket.bind((host, port))
     server_socket.listen(1)
