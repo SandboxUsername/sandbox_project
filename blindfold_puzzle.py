@@ -1,3 +1,4 @@
+import sys
 import requests
 import chess
 
@@ -124,5 +125,5 @@ def main(puzzle_id):
         print(e)
 
 # Example usage with a Lichess puzzle ID
-puzzle_id = "cgWlx"  # Replace with your desired puzzle ID
+puzzle_id = sys.argv[1]
 main(puzzle_id)
