@@ -18,6 +18,8 @@ def get_item(id: int):
 
 @app.post("/items")
 def create_item(item: Item):
+    if item.id - 1 != int(list(items.keys())[-1]):
+        raise HTTPException(status_code=400, detail="Wrong id.")
     if item.id - 1 != int(item.description) / 7:
         raise HTTPException(status_code=400, detail="Wrong description.")
     items[item.id] = item.description
