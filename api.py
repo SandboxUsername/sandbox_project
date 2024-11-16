@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from schemas import Item
 
 app = FastAPI()
 
@@ -14,3 +15,8 @@ def get_item(id: int):
         raise HTTPException(status_code=404, detail='Item not in the database.')
     item = items[id]
     return item
+
+@app.post("/items")
+def create_item(item: Item):
+    items[item.id] = item.description
+    return items
