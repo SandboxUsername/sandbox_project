@@ -7,7 +7,7 @@ app = FastAPI()
 def health_check():
     return {'Working': True}
 
-items = {x + 1: x * 7 for x in range(21)}
+items = {x + 1: str(x * 7) for x in range(21)}
 
 @app.get("/items/{id}")
 def get_item(id: int):
@@ -18,5 +18,7 @@ def get_item(id: int):
 
 @app.post("/items")
 def create_item(item: Item):
+    if item.id - 1 != int(item.description) / 7:
+        raise HTTPException(status_code=400, detail="Wrong description.")
     items[item.id] = item.description
     return items
