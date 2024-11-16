@@ -15,11 +15,15 @@ def test_healthy_check_mulfunctioning():
 
 def test_get_item_valid():
     response = client.get("/items/1")
-    response.status_code == 200
-    response.json() == 4
+    assert response.status_code == 200
+    assert response.json() == 0
 
-def test_get_item_invalid():
+def test_get_item_absent_id():
     response = client.get("/items/1000")
-    response.status_code == 404
-    response.json() == {'detail': 'Item not in the database.'}
+    assert response.status_code == 404
+    assert response.json() == {'detail': 'Item not in the database.'}
 
+def test_get_item_string_id():
+    response = client.get("/items/'1'")
+    assert response.status_code == 422
+    assert response.json() == {'detail': [{'input': "'1'", 'loc': ['path', 'id'], 'msg': 'Input should be a valid integer, unable to parse string as an integer', 'type': 'int_parsing'}]}
