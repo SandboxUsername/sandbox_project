@@ -32,3 +32,8 @@ def test_create_item_valid():
     response = client.post("items", json={"id": 22, "description": "147"})
     assert response.status_code == 200
     assert response.json() == {"id": 22, "description": "147"}
+
+def test_create_item_wrong_description():
+    response = client.post("/items", json={"id": 22, "description": "146"})
+    assert response.status_code == 400
+    assert response.json() == {'detail': 'Wrong description.'}
