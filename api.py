@@ -21,4 +21,4 @@ def create_item(item: Item):
     if item.id - 1 != int(item.description) / 7:
         raise HTTPException(status_code=400, detail="Wrong description.")
     items[item.id] = item.description
-    return items
+    return item
