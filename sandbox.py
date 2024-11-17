@@ -1,13 +1,26 @@
-import pytest
+from typing import List
+from sqlmodel import Field, SQLModel, Session, create_engine, select
 
-@pytest.fixture
-def a():
-    print(1)
-    yield
-    print(2)
+class Item(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
+    description: str
 
-def x():
-    return 123
+DATABASE_URL = 'sqlite:///./first_database.db'
+engine = create_engine(DATABASE_URL)
+SQLModel.metadata.create_all(engine)
 
-def test_x(a):
-    assert x() == 123
+
+def insert_item(item: Item) -> Item:
+    with Session(engine) as session:
+        session.add(item)
+        session.commit()
+        session.refresh(item)
+        return item
+
+def get_items() -> List[Item]:
+    with Session(engine) as session:
+        return session.exec(select(Item)).all()
+
+insert_item(Item(description='First item'))
+items = get_items()
+print(items)
