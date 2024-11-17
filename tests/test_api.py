@@ -18,6 +18,12 @@ def test_get_item_valid():
     assert response.status_code == 200
     assert response.json() == "0"
 
+def test_get_item_valid_mock(mocker):
+    mocker.patch('api.get_database', return_value={'id': 1, 'description': '0'})
+    response = client.get('/items/1')
+    assert response.status_code == 200
+    assert response.json() == "0"
+
 def test_get_item_absent_id():
     response = client.get("/items/1000")
     assert response.status_code == 404
