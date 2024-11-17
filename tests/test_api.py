@@ -33,11 +33,12 @@ def test_get_item_absent_id():
     assert response.status_code == 404
     assert response.json() == {'detail': 'Item not in the database.'}
 
-def test_get_item_absent_id_mock(mocker):
-    mocker.patch('api.get_database', return_value={'detail': 'Item not in the database.'})
-    response = client.get('/items/1000')
+def test_get_item_absent_id_mock():
+    app.dependency_overrides[get_database] = mock_get_database
+    response = client.get('/items/11')
     assert response.status_code == 404
     assert response.json() == {'detail': 'Item not in the database.'}
+    app.dependency_overrides.clear()
 
 def test_get_item_string_id():
     response = client.get("/items/'1'")
