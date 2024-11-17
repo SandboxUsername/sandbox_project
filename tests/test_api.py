@@ -1,7 +1,10 @@
 from fastapi.testclient import TestClient
-from api import app
+from api import app, get_database
 
 client = TestClient(app=app)
+
+def mock_get_database():
+    return {x + 1: str(x * 7) for x in range(10)}
 
 def test_healthy_check():
     response = client.get("/")
@@ -18,11 +21,12 @@ def test_get_item_valid():
     assert response.status_code == 200
     assert response.json() == "0"
 
-def test_get_item_valid_mock(mocker):
-    mocker.patch('api.get_database', return_value={'id': 1, 'description': '0'})
+def test_get_item_valid_mock():
+    app.dependency_overrides[get_database] = mock_get_database
     response = client.get('/items/1')
     assert response.status_code == 200
     assert response.json() == "0"
+    app.dependency_overrides.clear()
 
 def test_get_item_absent_id():
     response = client.get("/items/1000")
@@ -48,9 +52,9 @@ def test_create_item_valid():
 def test_create_item_wrong_description():
     response = client.post("/items", json={"id": 23, "description": "146"})  # TODO: Isolate this test
     assert response.status_code == 400
-    assert response.json() == {'detail': 'Wrong description.'}
+    assert response.json() == {'detail': 'Wrong description. Correct description: 154'}
 
 def test_create_item_wrong_id():
     response = client.post("/items", json={"id": 22, "description": "140"})
     assert response.status_code == 400
-    assert response.json() == {'detail': 'Wrong id.'}
+    assert response.json() == {'detail': 'Wrong id. Correct id: 23.'}
