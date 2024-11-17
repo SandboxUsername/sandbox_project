@@ -50,12 +50,33 @@ def test_create_item_valid():
     assert response.status_code == 200
     assert response.json() == {"id": 22, "description": "147"}
 
+def test_create_item_valid_mock():
+    app.dependency_overrides[get_database] = mock_get_database
+    response = client.post("items", json={"id": 11, "description": "70"})
+    assert response.status_code == 200
+    assert response.json() == {"id": 11, "description": "70"}
+    app.dependency_overrides.clear()
+
 def test_create_item_wrong_description():
     response = client.post("/items", json={"id": 23, "description": "146"})  # TODO: Isolate this test
     assert response.status_code == 400
     assert response.json() == {'detail': 'Wrong description. Correct description: 154'}
 
+def test_create_item_wrong_description_mock():
+    app.dependency_overrides[get_database] = mock_get_database
+    response = client.post("/items", json={"id": 11, "description": "71"})
+    assert response.status_code == 400
+    assert response.json() == {'detail': 'Wrong description. Correct description: 70'}
+    app.dependency_overrides.clear()
+
 def test_create_item_wrong_id():
     response = client.post("/items", json={"id": 22, "description": "140"})
     assert response.status_code == 400
     assert response.json() == {'detail': 'Wrong id. Correct id: 23.'}
+
+def test_create_item_wrong_id_mock():
+    app.dependency_overrides[get_database] = mock_get_database
+    response = client.post("/items", json={"id": 22, "description": "140"})
+    assert response.status_code == 400
+    assert response.json() == {'detail': 'Wrong id. Correct id: 11.'}
+    app.dependency_overrides.clear()
