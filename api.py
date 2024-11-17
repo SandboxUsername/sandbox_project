@@ -21,11 +21,10 @@ def get_item(id: int, db=Depends(get_database)):
 
 @app.post("/items")
 def create_item(item: Item, db=Depends(get_database)):
-    if item.id - 1 != int(list(db.keys())[-1]):
-        raise HTTPException(status_code=400, detail="Wrong id.")
+    correct_id = int(list(db.keys())[-1]) + 1
+    if item.id != correct_id:
+        raise HTTPException(status_code=400, detail=f"Wrong id. Correct id: {correct_id}.")
     if item.id - 1 != int(item.description) / 7:
-        raise HTTPException(status_code=400, detail="Wrong description.")
-    # breakpoint()
+        raise HTTPException(status_code=400, detail=f"Wrong description. Correct description: {(correct_id - 1) * 7}")
     db[item.id] = item.description
-    # breakpoint()
     return item
