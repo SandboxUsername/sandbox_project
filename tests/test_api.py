@@ -1,3 +1,4 @@
+import pytest
 from fastapi.testclient import TestClient
 from api import app, get_database
 
@@ -5,6 +6,12 @@ client = TestClient(app=app)
 
 def mock_get_database():
     return {x + 1: str(x * 7) for x in range(10)}
+
+@pytest.fixture
+def override_and_clean():
+    app.dependency_overrides[get_database] = mock_get_database
+    yield
+    app.dependency_overrides.clear()
 
 def test_healthy_check():
     response = client.get("/")
@@ -21,24 +28,20 @@ def test_get_item_valid():
     assert response.status_code == 200
     assert response.json() == "0"
 
-def test_get_item_valid_mock():
-    app.dependency_overrides[get_database] = mock_get_database
+def test_get_item_valid_mock(override_and_clean):
     response = client.get('/items/1')
     assert response.status_code == 200
     assert response.json() == "0"
-    app.dependency_overrides.clear()
 
 def test_get_item_absent_id():
     response = client.get("/items/1000")
     assert response.status_code == 404
     assert response.json() == {'detail': 'Item not in the database.'}
 
-def test_get_item_absent_id_mock():
-    app.dependency_overrides[get_database] = mock_get_database
+def test_get_item_absent_id_mock(override_and_clean):
     response = client.get('/items/11')
     assert response.status_code == 404
     assert response.json() == {'detail': 'Item not in the database.'}
-    app.dependency_overrides.clear()
 
 def test_get_item_string_id():
     response = client.get("/items/'1'")
@@ -50,33 +53,27 @@ def test_create_item_valid():
     assert response.status_code == 200
     assert response.json() == {"id": 22, "description": "147"}
 
-def test_create_item_valid_mock():
-    app.dependency_overrides[get_database] = mock_get_database
+def test_create_item_valid_mock(override_and_clean):
     response = client.post("items", json={"id": 11, "description": "70"})
     assert response.status_code == 200
     assert response.json() == {"id": 11, "description": "70"}
-    app.dependency_overrides.clear()
 
 def test_create_item_wrong_description():
     response = client.post("/items", json={"id": 23, "description": "146"})  # TODO: Isolate this test
     assert response.status_code == 400
     assert response.json() == {'detail': 'Wrong description. Correct description: 154'}
 
-def test_create_item_wrong_description_mock():
-    app.dependency_overrides[get_database] = mock_get_database
+def test_create_item_wrong_description_mock(override_and_clean):
     response = client.post("/items", json={"id": 11, "description": "71"})
     assert response.status_code == 400
     assert response.json() == {'detail': 'Wrong description. Correct description: 70'}
-    app.dependency_overrides.clear()
 
 def test_create_item_wrong_id():
     response = client.post("/items", json={"id": 22, "description": "140"})
     assert response.status_code == 400
     assert response.json() == {'detail': 'Wrong id. Correct id: 23.'}
 
-def test_create_item_wrong_id_mock():
-    app.dependency_overrides[get_database] = mock_get_database
+def test_create_item_wrong_id_mock(override_and_clean):
     response = client.post("/items", json={"id": 22, "description": "140"})
     assert response.status_code == 400
     assert response.json() == {'detail': 'Wrong id. Correct id: 11.'}
-    app.dependency_overrides.clear()
