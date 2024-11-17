@@ -29,6 +29,12 @@ def test_get_item_absent_id():
     assert response.status_code == 404
     assert response.json() == {'detail': 'Item not in the database.'}
 
+def test_get_item_absent_id_mock(mocker):
+    mocker.patch('api.get_database', return_value={'detail': 'Item not in the database.'})
+    response = client.get('/items/1000')
+    assert response.status_code == 404
+    assert response.json() == {'detail': 'Item not in the database.'}
+
 def test_get_item_string_id():
     response = client.get("/items/'1'")
     assert response.status_code == 422
