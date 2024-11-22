@@ -8,12 +8,15 @@ def get_puzzle_data(puzzle_id):
     response = requests.get(url, verify=False)
     if response.status_code == 200:
         data = response.json()
-        # Get PGN and information about whose turn it is
         pgn = data['game']['pgn']
-        initial_ply = data['puzzle']['initialPly']
+        puzzle_info = data['puzzle']
+        solution = puzzle_info['solution']
+        rating = puzzle_info['rating']
+        plays = puzzle_info['plays']
+        initial_ply = puzzle_info['initialPly']
         moves = pgn.split()
         turn = 'w' if len(moves) % 2 == 0 else 'b'  # Even moves means White's turn
-        return pgn, initial_ply, turn
+        return pgn, initial_ply, turn, solution, rating, plays
     else:
         raise ValueError(f"Failed to retrieve puzzle data for ID {puzzle_id} with status code {response.status_code}")
 
@@ -87,10 +90,29 @@ def get_sorted_piece_positions(board, turn):
     else:  # Black's turn
         return black_pieces, black_pawn_positions, white_pieces, white_pawn_positions
 
+def play_puzzle_interactively(solution, rating, plays):
+    for i, move in enumerate(solution):
+        if i % 2 == 0:  # Player's turn (even indices)
+            my_move = input("Your move: ").strip()
+            if my_move == move:
+                print("Correct!")
+                print("#" * 22)
+                if i == len(solution) - 1:  # Last move in the solution
+                    print(f"SUCCESS! You solved a {rating} rating puzzle played {plays} times perfectly!")
+                    return
+            else:
+                print(f"Wrong! GAME OVER! You got a {rating} rating puzzle played {plays} times wrong...")
+                if input("Do you want to see the solution? (yes/no): ").strip().lower() in {'yes', 'y'}:
+                    print("Solution:", " ".join(solution))
+                return
+        else:  # Opponent's turn (odd indices)
+            print(f"Opponent's move: {move}")
+            print("#" * 22)
+
 # Main function to get and display sorted piece positions and whose turn it is
 def main(puzzle_id):
     try:
-        pgn, initial_ply, turn = get_puzzle_data(puzzle_id)
+        pgn, initial_ply, turn, solution, rating, plays = get_puzzle_data(puzzle_id)
         board = get_final_board_from_pgn(pgn, initial_ply)
         
         # Get sorted piece positions, with current player's pieces first
@@ -103,7 +125,7 @@ def main(puzzle_id):
         
         # Display White pieces
         print(f"{current_player} pieces:")
-        print("-----------")
+        print("-------------")
         # Show pieces
         for _, piece, square in winner_pieces:
             print(f"{piece} on {square}.")
@@ -113,17 +135,20 @@ def main(puzzle_id):
         
         # Display Black pieces
         print(f"\n{other_player} pieces:")
-        print("-----------")
+        print("-------------")
         # Show pieces
         for _, piece, square in loser_pieces:
             print(f"{piece} on {square}.")
         # Show pawns from left to right
         for pawn in loser_pawn_positions:
             print(f"Pawn on {pawn}.")
+
+        print("\nLet's solve the puzzle!")
+        play_puzzle_interactively(solution, rating, plays)
     
     except ValueError as e:
         print(e)
 
-# Example usage with a Lichess puzzle ID
-puzzle_id = sys.argv[1]
-main(puzzle_id)
+if __name__ == '__main__':
+    puzzle_id = sys.argv[1]
+    main(puzzle_id)
